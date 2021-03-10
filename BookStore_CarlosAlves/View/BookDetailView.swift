@@ -24,6 +24,26 @@ struct BookDetailView: View {
     
     var body: some View {
         VStack (alignment: .center ){
+            if favorites.contains { $0.bookId == book.id } {
+                Image("star_yellow")
+                    .onTapGesture(perform: {
+                        book.objectWillChange.send()
+
+                        if let favorite = favorites.first(where: { $0.bookId == book.id }) {
+                            managedObjectContext.delete(favorite)
+                        }
+                    })
+            } else {
+                Image("star")
+                    .onTapGesture(perform: {
+                        book.objectWillChange.send()
+                        
+                        let favorite = Favorite(context: managedObjectContext)
+                        favorite.bookId = book.id
+                        PersistenceController.shared.save()
+                    })
+            }
+            
             if let title = book.volumeInfo?.title {
                 Text(title)
                     .font(.caption)

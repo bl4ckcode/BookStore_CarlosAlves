@@ -10,41 +10,48 @@ import Combine
 import UIKit
 
 struct BookDetailView: View {
-    @Environment(\.openURL) var openURL
     @ObservedObject var book = Book()
+
+    @Environment(\.openURL) var openURL
+    @Environment(\.managedObjectContext) var managedObjectContext
+    
+    @FetchRequest(
+        entity: Favorite.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \Favorite.bookId, ascending: true),
+        ]
+    ) var favorites: FetchedResults<Favorite>
     
     var body: some View {
-        NavigationView {
-            VStack {
-                ImageView(withURL: book.volumeInfo?.imageLinks?.thumbnail ?? "")
-                
-                if let title = book.volumeInfo?.title {
-                    Text(title)
-                        .font(.caption)
-                        .bold()
-                }
-                
-                if let publisher = book.volumeInfo?.publisher {
-                    Text(publisher)
-                        .font(.body)
-                }
-                
-                if let publishedDate = book.volumeInfo?.publishedDate {
-                    Text(publishedDate)
-                        .font(.body)
-                }
-                
-                if let authors = book.volumeInfo?.authors, authors.count > 0 {
-                    List(authors, id: \.self) { item in
-                        Text(item)
-                            .font(.body)
-                    }
-                }
-                
-                if let buyLink = book.volumeInfo?.saleInfo?.buyLink {
-                    Button("Buy this book") {
-                        openURL(URL(string: buyLink)!)
-                    }
+        VStack (alignment: .center ){
+            if let title = book.volumeInfo?.title {
+                Text(title)
+                    .font(.caption)
+                    .bold()
+                    .padding()
+            }
+        
+            ImageView(withURL: book.volumeInfo?.imageLinks?.thumbnail ?? "")
+            
+            if let publisher = book.volumeInfo?.publisher {
+                Text(publisher)
+                    .font(.body)
+            }
+            
+            if let publishedDate = book.volumeInfo?.publishedDate {
+                Text(publishedDate)
+                    .font(.body)
+            }
+            
+            if let authors = book.volumeInfo?.authors, authors.count > 0 {
+                Text(authors.joined(separator: ", "))
+                    .font(.body)
+                    .padding()
+            }
+            
+            if let buyLink = book.volumeInfo?.saleInfo?.buyLink {
+                Button("Buy this book") {
+                    openURL(URL(string: buyLink)!)
                 }
             }
         }
